@@ -13,7 +13,7 @@ services:
       - "9443:9443"   # HTTPS proxy
       - "9180:9180"   # Admin API (if needed for debugging)
     volumes:
-      - ${PROJECT_DIR:-.}/apisix/plugin/:/usr/local/apisix/custom-plugin/apisix/plugins/
+      - ${PROJECT_DIR:-.}/apisix/plugins/:/usr/local/apisix/custom-plugin/apisix/plugins/
       - ${PROJECT_DIR:-.}/t/:/usr/local/apisix/t/
       - ${SIXTE_HOME:-.}/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ${SIXTE_HOME:-.}/conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro

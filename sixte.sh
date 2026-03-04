@@ -66,9 +66,9 @@ preflight() {
 
 # ─── Ensure project scaffolding exists ───────────────────────────────
 ensure_scaffold() {
-    if [[ ! -d "${PROJECT_DIR}/apisix/plugin" ]]; then
-        warn "Creating ${PROJECT_DIR}/apisix/plugin/ directory..."
-        mkdir -p "${PROJECT_DIR}/apisix/plugin"
+    if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
+        warn "Creating ${PROJECT_DIR}/apisix/plugins/ directory..."
+        mkdir -p "${PROJECT_DIR}/apisix/plugins"
     fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         warn "Creating ${PROJECT_DIR}/t/ directory..."
@@ -190,7 +190,7 @@ ${CYAN}COMMANDS${NC}
     ${GREEN}logs${NC}        Tail container logs
     ${GREEN}test${NC}        Run prove -r t/ inside the container
     ${GREEN}shell${NC}       Open a shell inside the APISIX container
-    ${GREEN}init${NC}        Initialise a new plugin project (create plugin/ and t/)
+    ${GREEN}init${NC}        Initialise a new plugin project (create plugins/ and t/)
     ${GREEN}help${NC}        Show this help message
 
 ${CYAN}ENVIRONMENT${NC}
