@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  apisix:
+    build:
+      context: ${SIXTE_HOME:-.}
+      dockerfile: Dockerfile
+    image: apisix-testing:latest
+    container_name: sixte-apisix
+    restart: unless-stopped
+    ports:
+      - "9080:9080"   # HTTP proxy
+      - "9443:9443"   # HTTPS proxy
+      - "9180:9180"   # Admin API (if needed for debugging)
+    volumes:
+      - ${PROJECT_DIR:-.}/apisix/plugin/:/usr/local/apisix/custom-plugin/apisix/plugins/
+      - ${PROJECT_DIR:-.}/t/:/usr/local/apisix/t/
+      - ${SIXTE_HOME:-.}/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ${SIXTE_HOME:-.}/conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    environment:
+      - APISIX_STAND_ALONE=true
+    networks:
+      - sixte-net
+
+networks:
+  sixte-net:
+    driver: bridge
