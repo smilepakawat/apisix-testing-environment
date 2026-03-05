@@ -80,7 +80,7 @@ ensure_image() {
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
     info "Building APISIX test image (${IMAGE_NAME})..."
-    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile.test" "${SIXTE_HOME}"
+    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
     info "Build complete ✓"
 }
 
