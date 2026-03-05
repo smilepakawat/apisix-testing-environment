@@ -23,18 +23,18 @@ warn()    { echo -e "${YELLOW}[sixte]${NC} $*"; }
 err()     { echo -e "${RED}[sixte]${NC} $*" >&2; }
 
 # ─── Resolve paths ───────────────────────────────────────────────────
-# SIXTE_HOME: where Dockerfile, docker-compose.yml, and apisix_conf live
+# SIXTE_HOME: where Dockerfile, docker-compose.yml live
 SIXTE_HOME="${SIXTE_HOME:-$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")")" && pwd)}"
 export SIXTE_HOME
 
-# PROJECT_DIR: the current working directory (where plugin/ and t/ live)
+# PROJECT_DIR: the current working directory (where plugins/ and t/ live)
 PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 export PROJECT_DIR
 
 # Container / image names
 COMPOSE_PROJECT_NAME="sixte"
 export COMPOSE_PROJECT_NAME
-IMAGE_NAME="apisix-testing:3.15.0"
+IMAGE_NAME="apisix-testing:latest"
 CONTAINER_NAME="sixte-apisix"
 
 # ─── Detect docker compose command ───────────────────────────────────

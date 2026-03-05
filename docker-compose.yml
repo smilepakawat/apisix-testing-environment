@@ -22,6 +22,30 @@ services:
     networks:
       - sixte-net
 
+  etcd:
+    image: registry.k8s.io/etcd:3.5.12-0
+    environment:
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+    command: ["etcd"]
+
+  apisix-testing-environment:
+    depends_on:
+      - etcd
+    network_mode: "service:etcd"
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: apisix-testing-environment:${APISIX_TEST_VERSION:-3.15.0}
+    volumes:
+      - ./t:/apisix/t
+      - ./apisix/plugins/:/opt/custom-plugins/apisix/plugins/
+    working_dir: /usr/local/apisix-src
+    command: bash -c \
+      "mv /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ && \
+      prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
+
 networks:
   sixte-net:
     driver: bridge

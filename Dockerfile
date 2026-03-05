@@ -16,7 +16,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Test::Nginx (Perl test framework used by APISIX)
 RUN cpanm --notest Test::Nginx IPC::Run
 
-# Install busted (Lua unit-test framework)
-# RUN luarocks install busted
-
 USER apisix
