@@ -32,10 +32,12 @@ PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 export PROJECT_DIR
 
 # Container / image names
-COMPOSE_PROJECT_NAME="sixte"
-export COMPOSE_PROJECT_NAME
-IMAGE_NAME="apisix-testing:latest"
-CONTAINER_NAME="sixte-apisix"
+APISIX_TEST_VERSION=3.15.0
+export APISIX_TEST_VERSION
+SIXTE_NAME="apisix-testing-environment"
+export SIXTE_NAME
+IMAGE_NAME="${SIXTE_NAME}:${APISIX_TEST_VERSION}"
+export IMAGE_NAME
 
 # ─── Detect docker compose command ───────────────────────────────────
 detect_compose() {
@@ -84,76 +86,23 @@ ensure_image() {
     fi
 }
 
-# ─── Compose wrapper ────────────────────────────────────────────────
-compose() {
-    ${COMPOSE_CMD} -f "${SIXTE_HOME}/docker-compose.yml" -p "${COMPOSE_PROJECT_NAME}" "$@"
-}
-
 # ─── Commands ────────────────────────────────────────────────────────
-
 cmd_build() {
     info "Building APISIX test image (${IMAGE_NAME})..."
-    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
+    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile.test" "${SIXTE_HOME}"
     info "Build complete ✓"
-}
-
-cmd_up() {
-    ensure_image
-    ensure_scaffold
-    info "Starting APISIX (standalone mode)..."
-    info "  SIXTE_HOME   = ${SIXTE_HOME}"
-    info "  PROJECT_DIR  = ${PROJECT_DIR}"
-    compose up -d "$@"
-    info "APISIX is running ✓"
-    info "  HTTP  → http://localhost:9080"
-    info "  HTTPS → https://localhost:9443"
-}
-
-cmd_down() {
-    info "Stopping APISIX..."
-    compose down "$@"
-    info "Stopped ✓"
-}
-
-cmd_restart() {
-    cmd_down
-    cmd_up
-}
-
-cmd_status() {
-    compose ps
-}
-
-cmd_logs() {
-    compose logs -f "$@"
 }
 
 cmd_test() {
     ensure_image
     ensure_scaffold
     info "Starting test environment..."
-    compose up -d
+    info "version: ${APISIX_TEST_VERSION}"
     info "Running tests (prove -r t/) inside the container..."
-
-    local rc=0
-    docker exec -it "${CONTAINER_NAME}" bash -c \
-        "cd /usr/local/apisix && TEST_NGINX_SERVROOT=/usr/local/apisix/servroot prove -v -I. -r t/" \
-        || rc=$?
-
-    info "Tearing down test environment..."
-    compose down > /dev/null 2>&1
-
-    if [[ ${rc} -eq 0 ]]; then
-        info "All tests passed ✓"
-    else
-        err "Tests failed (exit code ${rc})"
-    fi
-    return ${rc}
-}
-
-cmd_shell() {
-    info "Opening shell in APISIX container..."
-    docker exec -it "${CONTAINER_NAME}" /bin/bash
+    
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
+    "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ && \
+    prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
 }
 
 cmd_init() {
@@ -183,13 +132,7 @@ ${CYAN}USAGE${NC}
 
 ${CYAN}COMMANDS${NC}
     ${GREEN}build${NC}       Build the APISIX test Docker image
-    ${GREEN}up${NC}          Start the APISIX environment
-    ${GREEN}down${NC}        Stop and remove containers
-    ${GREEN}restart${NC}     Restart the environment (down + up)
-    ${GREEN}status${NC}      Show container status
-    ${GREEN}logs${NC}        Tail container logs
     ${GREEN}test${NC}        Run prove -r t/ inside the container
-    ${GREEN}shell${NC}       Open a shell inside the APISIX container
     ${GREEN}init${NC}        Initialise a new plugin project (create plugins/ and t/)
     ${GREEN}help${NC}        Show this help message
 
@@ -202,10 +145,7 @@ ${CYAN}ENVIRONMENT${NC}
 ${CYAN}EXAMPLES${NC}
     # From your plugin project directory:
     sixte build              # Build the test image (first time)
-    sixte up                 # Start APISIX
     sixte test               # Run your tests
-    sixte logs               # Check logs if something fails
-    sixte down               # Tear down when done
 
 EOF
 }
@@ -217,13 +157,7 @@ main() {
 
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
-        up)      preflight; cmd_up "$@" ;;
-        down)    preflight; cmd_down "$@" ;;
-        restart) preflight; cmd_restart "$@" ;;
-        status)  preflight; cmd_status "$@" ;;
-        logs)    preflight; cmd_logs "$@" ;;
         test)    preflight; cmd_test "$@" ;;
-        shell)   preflight; cmd_shell "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)
             usage ;;
