@@ -27,7 +27,7 @@ err()     { echo -e "${RED}[sixte]${NC} $*" >&2; }
 SIXTE_HOME="${SIXTE_HOME:-$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")")" && pwd)}"
 export SIXTE_HOME
 
-# PROJECT_DIR: the current working directory (where plugins/ and t/ live)
+# PROJECT_DIR: the current working directory
 PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 export PROJECT_DIR
 
@@ -38,18 +38,6 @@ SIXTE_NAME="apisix-testing-environment"
 export SIXTE_NAME
 IMAGE_NAME="${SIXTE_NAME}:${APISIX_TEST_VERSION}"
 export IMAGE_NAME
-
-# ─── Detect docker compose command ───────────────────────────────────
-detect_compose() {
-    if docker compose version &>/dev/null; then
-        COMPOSE_CMD="docker compose"
-    elif command -v docker-compose &>/dev/null; then
-        COMPOSE_CMD="docker-compose"
-    else
-        err "Neither 'docker compose' nor 'docker-compose' found. Please install Docker with Compose."
-        exit 1
-    fi
-}
 
 # ─── Pre-flight checks ──────────────────────────────────────────────
 preflight() {
@@ -63,7 +51,10 @@ preflight() {
         exit 1
     fi
 
-    detect_compose
+    if ! docker compose version &>/dev/null; then
+        err "Docker Compose is not installed. Please install Docker Compose."
+        exit 1
+    fi
 }
 
 # ─── Ensure project scaffolding exists ───────────────────────────────
@@ -103,6 +94,8 @@ cmd_test() {
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
     "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ && \
     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
+
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
 }
 
 cmd_init() {
@@ -115,6 +108,12 @@ cmd_init() {
     fi
     if [[ ! -f "${PROJECT_DIR}/t/.gitkeep" ]]; then
         touch "${PROJECT_DIR}/t/.gitkeep"
+    fi
+    if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
+        cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
+    fi
+    if [[ ! -f "${PROJECT_DIR}/.luacheckrc" ]]; then
+        cp "${SIXTE_HOME}/assets/init/luacheckrc" "${PROJECT_DIR}/.luacheckrc"
     fi
 
     info "Project scaffolding created ✓"

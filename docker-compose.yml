@@ -36,8 +36,8 @@ services:
     build:
       context: ${SIXTE_HOME:-.}
       dockerfile: Dockerfile.test
-    image: apisix-testing-environment
-    container_name: apisix-testing-environment
+    image: ${IMAGE_NAME}
+    container_name: ${SIXTE_NAME}
     volumes:
       - ${PROJECT_DIR:-.}/apisix/plugins/:/opt/custom-plugins/apisix/plugins/
       - ${PROJECT_DIR:-.}/t:/apisix/t
