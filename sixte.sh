@@ -103,11 +103,11 @@ cmd_init() {
     mkdir -p "${PROJECT_DIR}/apisix/plugins"
     mkdir -p "${PROJECT_DIR}/t"
 
-    if [[ ! -f "${PROJECT_DIR}/apisix/plugins/.gitkeep" ]]; then
-        touch "${PROJECT_DIR}/apisix/plugins/.gitkeep"
+    if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
+        mkdir "${PROJECT_DIR}/apisix/plugins"
     fi
-    if [[ ! -f "${PROJECT_DIR}/t/.gitkeep" ]]; then
-        touch "${PROJECT_DIR}/t/.gitkeep"
+    if [[ ! -d "${PROJECT_DIR}/t" ]]; then
+        mkdir "${PROJECT_DIR}/t"
     fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
