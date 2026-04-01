@@ -108,9 +108,8 @@ cmd_utest() {
     info "Running Busted unit tests (spec/) inside the container..."
 
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
-    "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ 2>/dev/null || true && \
-    cd /apisix && \
-    busted --verbose spec/"
+    "cd /opt/custom-plugins/ && \
+    busted --lua=luajit spec/"
 
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
 }
