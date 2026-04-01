@@ -51,3 +51,8 @@ RUN curl https://raw.githubusercontent.com/apache/apisix/master/utils/linux-inst
 # ── 5. Environment ──────────────────────────────────────────────────────────
 ENV APISIX_HOME=/usr/local/apisix-src
 ENV PATH="/usr/local/openresty/nginx/sbin:/usr/local/openresty/luajit/bin:/usr/local/openresty/bin:${PATH}"
+ENV LUA_PATH="/usr/local/openresty/lualib/?.lua;/usr/local/openresty/lualib/?/init.lua;/usr/local/apisix-src/?.lua;./?.lua;;"
+ENV LUA_CPATH="/usr/local/openresty/lualib/?.so;/usr/local/openresty/lualib/?/init.so;./?.so;;"
+
+# ── 6. Install Busted (unit-test runner for Lua) ─────────────────────────────
+RUN luarocks install busted

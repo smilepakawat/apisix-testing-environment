@@ -41,6 +41,8 @@ services:
     volumes:
       - ${PROJECT_DIR:-.}/apisix/plugins/:/opt/custom-plugins/apisix/plugins/
       - ${PROJECT_DIR:-.}/t:/apisix/t
+      - ${PROJECT_DIR:-.}/spec:/apisix/spec
+      - ${PROJECT_DIR:-.}/.busted:/apisix/.busted
     working_dir: /usr/local/apisix-src
     # command: bash -c \
     #   "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ && \

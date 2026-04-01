@@ -67,6 +67,10 @@ ensure_scaffold() {
         warn "Creating ${PROJECT_DIR}/t/ directory..."
         mkdir -p "${PROJECT_DIR}/t"
     fi
+    if [[ ! -d "${PROJECT_DIR}/spec" ]]; then
+        warn "Creating ${PROJECT_DIR}/spec/ directory..."
+        mkdir -p "${PROJECT_DIR}/spec"
+    fi
 }
 
 # ─── Ensure image is built ───────────────────────────────────────────
@@ -98,10 +102,24 @@ cmd_test() {
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
 }
 
+cmd_utest() {
+    ensure_image
+    ensure_scaffold
+    info "Running Busted unit tests (spec/) inside the container..."
+
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
+    "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ 2>/dev/null || true && \
+    cd /apisix && \
+    busted --verbose spec/"
+
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
+}
+
 cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
     mkdir -p "${PROJECT_DIR}/apisix/plugins"
     mkdir -p "${PROJECT_DIR}/t"
+    mkdir -p "${PROJECT_DIR}/spec"
 
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir "${PROJECT_DIR}/apisix/plugins"
@@ -118,7 +136,8 @@ cmd_init() {
 
     info "Project scaffolding created ✓"
     info "  ${PROJECT_DIR}/apisix/plugins/  — place your Lua plugins here"
-    info "  ${PROJECT_DIR}/t/       — place your .t test files here"
+    info "  ${PROJECT_DIR}/t/               — place your .t test files here"
+    info "  ${PROJECT_DIR}/spec/            — place your Busted *_spec.lua files here"
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
@@ -132,7 +151,8 @@ ${CYAN}USAGE${NC}
 ${CYAN}COMMANDS${NC}
     ${GREEN}build${NC}       Build the APISIX test Docker image
     ${GREEN}test${NC}        Run prove -r t/ inside the container
-    ${GREEN}init${NC}        Initialise a new plugin project (create plugins/ and t/)
+    ${GREEN}utest${NC}       Run Busted unit tests (spec/**/*_spec.lua) inside the container
+    ${GREEN}init${NC}        Initialise a new plugin project (create plugins/, t/, and spec/)
     ${GREEN}help${NC}        Show this help message
 
 ${CYAN}ENVIRONMENT${NC}
@@ -157,6 +177,7 @@ main() {
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
         test)    preflight; cmd_test "$@" ;;
+        utest)   preflight; cmd_utest "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)
             usage ;;
