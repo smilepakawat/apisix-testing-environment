@@ -116,15 +116,14 @@ cmd_utest() {
 
 cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
-    mkdir -p "${PROJECT_DIR}/apisix/plugins"
-    mkdir -p "${PROJECT_DIR}/t"
-    mkdir -p "${PROJECT_DIR}/spec"
-
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir "${PROJECT_DIR}/apisix/plugins"
     fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         mkdir "${PROJECT_DIR}/t"
+    fi
+    if [[ ! -d "${PROJECT_DIR}/spec" ]]; then
+        mkdir "${PROJECT_DIR}/spec"
     fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
@@ -132,11 +131,17 @@ cmd_init() {
     if [[ ! -f "${PROJECT_DIR}/.luacheckrc" ]]; then
         cp "${SIXTE_HOME}/assets/init/luacheckrc" "${PROJECT_DIR}/.luacheckrc"
     fi
+    if [[ ! -f "${PROJECT_DIR}/.busted" ]]; then
+        cp "${SIXTE_HOME}/assets/init/busted" "${PROJECT_DIR}/.busted"
+    fi
 
     info "Project scaffolding created ✓"
     info "  ${PROJECT_DIR}/apisix/plugins/  — place your Lua plugins here"
     info "  ${PROJECT_DIR}/t/               — place your .t test files here"
     info "  ${PROJECT_DIR}/spec/            — place your Busted *_spec.lua files here"
+    info "  ${PROJECT_DIR}/.busted          — Busted configuration"
+    info "  ${PROJECT_DIR}/.editorconfig    — Editor configuration"
+    info "  ${PROJECT_DIR}/.luacheckrc      — Luacheck configuration"
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
