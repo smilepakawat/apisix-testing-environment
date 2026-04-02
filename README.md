@@ -1,0 +1,91 @@
+# sixte — APISIX Plugin Testing Environment CLI
+
+`sixte` is an easy-to-use CLI tool designed to streamline the development and testing of Apache APISIX plugins, inspired by tools like Kong's Pongo. It provides an isolated, container-based testing environment using Docker and Docker Compose.
+
+## Prerequisites
+
+Before using `sixte`, ensure you have the following installed and running:
+
+* **Docker**
+* **Docker Compose**
+
+## Installation
+
+zsh or bash
+
+```sh
+export PATH="$PATH:~/.local/bin"
+```
+
+fish
+
+```sh
+set -gx PATH $PATH ~/.local/bin
+```
+
+Clone the repository and create a symlink to the `sixte.sh` script in `~/.local/bin`.
+
+```bash
+git clone https://github.com/smilepakawat/apisix-testing-environment.git
+mkdir -p ~/.local/bin
+ln -s $(realpath apisix-testing-environment/sixte.sh) ~/.local/bin/sixte
+```
+
+## Usage
+
+```bash
+sixte <command> [options]
+```
+
+Run this from your plugin project directory. The script discovers the framework's Docker assets via `SIXTE_HOME` (which defaults to the directory containing the script).
+
+### Commands
+
+* **`build`** - Build the APISIX test Docker image
+* **`test`** - Run integration tests (`prove -r t/`) inside the container
+* **`utest`** - Run Busted unit tests (`spec/**/*_spec.lua`) inside the container
+* **`init`** - Initialise a new plugin project (creates the `plugins/`, `t/`, and `spec/` directories along with configuration files)
+* **`help`** - Show the help message
+
+### Environment Variables
+
+* **`SIXTE_HOME`**: Path to the sixte framework directory (default: directory containing the `sixte` script).
+* **`PROJECT_DIR`**: Path to the plugin project directory (default: current working directory).
+
+## Getting Started
+
+1. **Initialize the Project Structure**:
+   From your plugin project directory, run:
+
+   ```bash
+   sixte init
+   ```
+
+   This command creates the scaffolding needed for your plugins and tests:
+   * `apisix/plugins/` — place your Lua plugins here
+   * `t/` — place your `.t` test files here
+   * `spec/` — place your Busted `*_spec.lua` files here
+   * `.busted` — Busted configuration
+   * `.editorconfig` — Editor configuration
+   * `.luacheckrc` — Luacheck configuration
+
+2. **Build the Test Image**:
+   If this is your first time, build the APISIX test Docker image:
+
+   ```bash
+   sixte build
+   ```
+
+3. **Run Integration Tests**:
+   To execute the `prove` tests located in the `t/` directory:
+
+   ```bash
+   sixte test
+   ```
+
+4. **Run Unit Tests**:
+   To execute the Busted unit tests located in the `spec/` directory:
+
+   ```bash
+   sixte utest
+   ```
