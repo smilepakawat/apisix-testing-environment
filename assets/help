@@ -1,0 +1,22 @@
+\033[1msixte\033[0m — APISIX Plugin Testing Environment CLI
+
+\033[0;36mUSAGE\033[0m
+    sixte <command> [options]
+
+\033[0;36mCOMMANDS\033[0m
+    \033[0;32mbuild\033[0m       Build the APISIX test Docker image
+    \033[0;32mtest\033[0m        Run prove -r t/ inside the container
+    \033[0;32mutest\033[0m       Run Busted unit tests (spec/**/*_spec.lua) inside the container
+    \033[0;32minit\033[0m        Initialise a new plugin project (create plugins/, t/, and spec/)
+    \033[0;32mhelp\033[0m        Show this help message
+
+\033[0;36mENVIRONMENT\033[0m
+    SIXTE_HOME      Path to the sixte framework directory
+                    (default: directory containing this script)
+    PROJECT_DIR     Path to the plugin project directory
+                    (default: current working directory)
+
+\033[0;36mEXAMPLES\033[0m
+    # From your plugin project directory:
+    sixte build              # Build the test image (first time)
+    sixte test               # Run your tests

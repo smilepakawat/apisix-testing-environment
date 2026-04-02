@@ -153,31 +153,7 @@ cmd_init() {
 
 # ─── Usage / Help ────────────────────────────────────────────────────
 usage() {
-    cat <<EOF
-${BOLD}sixte${NC} — APISIX Plugin Testing Environment CLI
-
-${CYAN}USAGE${NC}
-    sixte <command> [options]
-
-${CYAN}COMMANDS${NC}
-    ${GREEN}build${NC}       Build the APISIX test Docker image
-    ${GREEN}test${NC}        Run prove -r t/ inside the container
-    ${GREEN}utest${NC}       Run Busted unit tests (spec/**/*_spec.lua) inside the container
-    ${GREEN}init${NC}        Initialise a new plugin project (create plugins/, t/, and spec/)
-    ${GREEN}help${NC}        Show this help message
-
-${CYAN}ENVIRONMENT${NC}
-    SIXTE_HOME      Path to the sixte framework directory
-                    (default: directory containing this script)
-    PROJECT_DIR     Path to the plugin project directory
-                    (default: current working directory)
-
-${CYAN}EXAMPLES${NC}
-    # From your plugin project directory:
-    sixte build              # Build the test image (first time)
-    sixte test               # Run your tests
-
-EOF
+    echo -e "$(<"${SIXTE_HOME}/assets/help")"
 }
 
 # ─── Main ────────────────────────────────────────────────────────────
