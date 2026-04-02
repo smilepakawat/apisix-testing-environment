@@ -51,7 +51,7 @@ RUN curl https://raw.githubusercontent.com/apache/apisix/master/utils/linux-inst
 # ── 5. Environment ──────────────────────────────────────────────────────────
 ENV APISIX_HOME=/usr/local/apisix-src
 ENV PATH="/usr/local/openresty/nginx/sbin:/usr/local/openresty/luajit/bin:/usr/local/openresty/bin:${PATH}"
-ENV LUA_PATH="/opt/custom-plugins/?.lua;/usr/local/apisix-src/?.lua;/usr/local/apisix-src/?/init.lua;;"
+ENV LUA_PATH="/opt/custom-plugins/?.lua;/usr/local/apisix-src/?.lua;/usr/local/apisix-src/?/init.lua;/usr/local/apisix-src/deps/share/lua/5.1/?.lua;/usr/local/apisix-src/deps/share/lua/5.1/?/init.lua;;"
 
 # ── 6. Install Busted (unit-test runner for Lua) ─────────────────────────────
 RUN luarocks install busted

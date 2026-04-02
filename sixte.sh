@@ -81,6 +81,14 @@ ensure_image() {
     fi
 }
 
+ensure_etcd() {
+    if ! docker container inspect "apisix-etcd" &>/dev/null; then
+        info "Starting etcd..."
+        docker compose -f "${SIXTE_HOME}/docker-compose.yml" up -d etcd > /dev/null 2>&1
+        info "Etcd started ✓"
+    fi
+}
+
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
     info "Building APISIX test image (${IMAGE_NAME})..."
@@ -91,6 +99,7 @@ cmd_build() {
 cmd_test() {
     ensure_image
     ensure_scaffold
+    ensure_etcd
     info "Starting test environment..."
     info "version: ${APISIX_TEST_VERSION}"
     info "Running tests (prove -r t/) inside the container..."
@@ -109,9 +118,7 @@ cmd_utest() {
 
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
     "cd /opt/custom-plugins/ && \
-    busted --lua=luajit spec/"
-
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
+    busted --lua=resty spec/"
 }
 
 cmd_init() {

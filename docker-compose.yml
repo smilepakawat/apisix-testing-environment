@@ -30,12 +30,10 @@ services:
     command: ["etcd"]
 
   apisix-testing-environment:
-    depends_on:
-      - etcd
     network_mode: "service:etcd"
     build:
       context: ${SIXTE_HOME:-.}
-      dockerfile: Dockerfile.test
+      dockerfile: Dockerfile
     image: ${IMAGE_NAME}
     container_name: ${SIXTE_NAME}
     volumes:
