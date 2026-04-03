@@ -1,8 +1,10 @@
-# Dockerfile.test
+# Dockerfile
 # Debian-based test image for APISIX custom plugin development.
 # Extends the official APISIX image and adds test-nginx + APISIX source tree.
 
 FROM apache/apisix:3.15.0-debian
+
+ARG APISIX_VERSION=release/3.15
 
 USER root
 
@@ -39,7 +41,6 @@ RUN git clone --depth 1 https://github.com/openresty/test-nginx.git \
         /usr/local/test-nginx
 
 # ── 4. Clone APISIX source (provides t/APISIX.pm, t/lib/, t/certs/, conf/) ─
-ARG APISIX_VERSION=release/3.15
 RUN curl https://raw.githubusercontent.com/apache/apisix/master/utils/linux-install-luarocks.sh -sL | bash - \
     && git clone --branch ${APISIX_VERSION} --recurse-submodules \
         https://github.com/apache/apisix.git /usr/local/apisix-src \
