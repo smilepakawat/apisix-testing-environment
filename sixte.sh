@@ -124,13 +124,13 @@ cmd_utest() {
 cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
-        mkdir "${PROJECT_DIR}/apisix/plugins"
+        mkdir -p "${PROJECT_DIR}/apisix/plugins"
     fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
-        mkdir "${PROJECT_DIR}/t"
+        mkdir -p "${PROJECT_DIR}/t"
     fi
     if [[ ! -d "${PROJECT_DIR}/spec" ]]; then
-        mkdir "${PROJECT_DIR}/spec"
+        mkdir -p "${PROJECT_DIR}/spec"
     fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
