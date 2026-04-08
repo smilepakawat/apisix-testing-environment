@@ -1,25 +1,4 @@
 services:
-  # apisix:
-  #   build:
-  #     context: ${SIXTE_HOME:-.}
-  #     dockerfile: Dockerfile
-  #   image: apisix-testing:latest
-  #   container_name: sixte-apisix
-  #   restart: unless-stopped
-  #   ports:
-  #     - "9080:9080"   # HTTP proxy
-  #     - "9443:9443"   # HTTPS proxy
-  #     - "9180:9180"   # Admin API (if needed for debugging)
-  #   volumes:
-  #     - ${PROJECT_DIR:-.}/apisix/plugins/:/usr/local/apisix/custom-plugin/apisix/plugins/
-  #     - ${PROJECT_DIR:-.}/t/:/usr/local/apisix/t/
-  #     - ${SIXTE_HOME:-.}/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
-  #     - ${SIXTE_HOME:-.}/conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
-  #   environment:
-  #     - APISIX_STAND_ALONE=true
-  #   networks:
-  #     - sixte-net
-
   etcd:
     image: registry.k8s.io/etcd:3.5.12-0
     container_name: apisix-etcd
@@ -38,11 +17,5 @@ services:
     container_name: ${SIXTE_NAME}
     volumes:
       - ${PROJECT_DIR:-.}/apisix/plugins/:/opt/custom-plugins/apisix/plugins/
-      - ${PROJECT_DIR:-.}/spec/:/opt/custom-plugins/spec/
-      - ${PROJECT_DIR:-.}/.busted:/opt/custom-plugins/.busted
       - ${PROJECT_DIR:-.}/t:/apisix/t
     working_dir: /usr/local/apisix-src
-
-# networks:
-#   sixte-net:
-#     driver: bridge

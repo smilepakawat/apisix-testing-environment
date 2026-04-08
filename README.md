@@ -43,14 +43,8 @@ Run this from your plugin project directory. The script discovers the framework'
 
 * **`build`** - Build the APISIX test Docker image
 * **`test`** - Run integration tests (`prove -r t/`) inside the container
-* **`utest`** - Run Busted unit tests (`spec/**/*_spec.lua`) inside the container
-* **`init`** - Initialise a new plugin project (creates the `plugins/`, `t/`, and `spec/` directories along with configuration files)
+* **`init`** - Initialise a new plugin project (creates the `plugins/` and `t/` directories along with configuration files)
 * **`help`** - Show the help message
-
-### Environment Variables
-
-* **`SIXTE_HOME`**: Path to the sixte framework directory (default: directory containing the `sixte` script).
-* **`PROJECT_DIR`**: Path to the plugin project directory (default: current working directory).
 
 ## Getting Started
 
@@ -64,10 +58,7 @@ Run this from your plugin project directory. The script discovers the framework'
    This command creates the scaffolding needed for your plugins and tests:
    * `apisix/plugins/` — place your Lua plugins here
    * `t/` — place your `.t` test files here
-   * `spec/` — place your Busted `*_spec.lua` files here
-   * `.busted` — Busted configuration
    * `.editorconfig` — Editor configuration
-   * `.luacheckrc` — Luacheck configuration
 
 2. **Build the Test Image**:
    If this is your first time, build the APISIX test Docker image:
@@ -81,11 +72,4 @@ Run this from your plugin project directory. The script discovers the framework'
 
    ```bash
    sixte test
-   ```
-
-4. **Run Unit Tests**:
-   To execute the Busted unit tests located in the `spec/` directory:
-
-   ```bash
-   sixte utest
    ```

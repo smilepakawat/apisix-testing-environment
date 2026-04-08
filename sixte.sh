@@ -67,10 +67,6 @@ ensure_scaffold() {
         warn "Creating ${PROJECT_DIR}/t/ directory..."
         mkdir -p "${PROJECT_DIR}/t"
     fi
-    if [[ ! -d "${PROJECT_DIR}/spec" ]]; then
-        warn "Creating ${PROJECT_DIR}/spec/ directory..."
-        mkdir -p "${PROJECT_DIR}/spec"
-    fi
 }
 
 # ─── Ensure image is built ───────────────────────────────────────────
@@ -92,7 +88,7 @@ ensure_etcd() {
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
     info "Building APISIX test image (${IMAGE_NAME})..."
-    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
+    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}" 2>&1 | tee build.log
     info "Build complete ✓"
 }
 
@@ -111,16 +107,6 @@ cmd_test() {
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
 }
 
-cmd_utest() {
-    ensure_image
-    ensure_scaffold
-    info "Running Busted unit tests (spec/) inside the container..."
-
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
-    "cd /opt/custom-plugins/ && \
-    busted --lua=resty spec/"
-}
-
 cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
@@ -129,26 +115,14 @@ cmd_init() {
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         mkdir -p "${PROJECT_DIR}/t"
     fi
-    if [[ ! -d "${PROJECT_DIR}/spec" ]]; then
-        mkdir -p "${PROJECT_DIR}/spec"
-    fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
-    fi
-    if [[ ! -f "${PROJECT_DIR}/.luacheckrc" ]]; then
-        cp "${SIXTE_HOME}/assets/init/luacheckrc" "${PROJECT_DIR}/.luacheckrc"
-    fi
-    if [[ ! -f "${PROJECT_DIR}/.busted" ]]; then
-        cp "${SIXTE_HOME}/assets/init/busted" "${PROJECT_DIR}/.busted"
     fi
 
     info "Project scaffolding created ✓"
     info "  ${PROJECT_DIR}/apisix/plugins/  — place your Lua plugins here"
     info "  ${PROJECT_DIR}/t/               — place your .t test files here"
-    info "  ${PROJECT_DIR}/spec/            — place your Busted *_spec.lua files here"
-    info "  ${PROJECT_DIR}/.busted          — Busted configuration"
     info "  ${PROJECT_DIR}/.editorconfig    — Editor configuration"
-    info "  ${PROJECT_DIR}/.luacheckrc      — Luacheck configuration"
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
@@ -164,7 +138,6 @@ main() {
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
         test)    preflight; cmd_test "$@" ;;
-        utest)   preflight; cmd_utest "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)
             usage ;;
