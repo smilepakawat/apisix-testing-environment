@@ -32,7 +32,7 @@ PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 export PROJECT_DIR
 
 # Container / image names
-APISIX_TEST_VERSION=3.15.0
+APISIX_TEST_VERSION=3.15.0-test
 export APISIX_TEST_VERSION
 SIXTE_NAME="apisix-testing-environment"
 export SIXTE_NAME
@@ -77,13 +77,7 @@ ensure_image() {
     fi
 }
 
-ensure_etcd() {
-    if ! docker container inspect "apisix-etcd" &>/dev/null; then
-        info "Starting etcd..."
-        docker compose -f "${SIXTE_HOME}/docker-compose.yml" up -d etcd > /dev/null 2>&1
-        info "Etcd started ✓"
-    fi
-}
+
 
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
@@ -92,19 +86,31 @@ cmd_build() {
     info "Build complete ✓"
 }
 
+cmd_run() {
+    ensure_image
+    ensure_scaffold
+    info "Starting APISIX in standalone mode..."
+    info "  Routes config : ${PROJECT_DIR}/apisix/conf/apisix.yaml"
+    info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
+    info "  Listening on  : http://localhost:9080"
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
+}
+
 cmd_test() {
     ensure_image
     ensure_scaffold
-    ensure_etcd
-    info "Starting test environment..."
+    info "Starting test environment (single container)..."
     info "version: ${APISIX_TEST_VERSION}"
     info "Running tests (prove -r t/) inside the container..."
-    
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
-    "cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ && \
-    prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
 
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" down etcd > /dev/null 2>&1
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
+    "etcd --listen-client-urls http://0.0.0.0:2379 \
+           --advertise-client-urls http://0.0.0.0:2379 \
+           --data-dir /tmp/etcd-data \
+           &>/tmp/etcd.log & \
+     sleep 2 && \
+     cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ 2>/dev/null || true && \
+     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
 }
 
 cmd_init() {
@@ -112,17 +118,25 @@ cmd_init() {
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir -p "${PROJECT_DIR}/apisix/plugins"
     fi
+    if [[ ! -d "${PROJECT_DIR}/apisix/conf" ]]; then
+        mkdir -p "${PROJECT_DIR}/apisix/conf"
+    fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         mkdir -p "${PROJECT_DIR}/t"
     fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
     fi
+    # Scaffold an apisix.yaml for standalone mode (if one doesn't exist yet)
+    if [[ ! -f "${PROJECT_DIR}/apisix/conf/apisix.yaml" ]]; then
+        cp "${SIXTE_HOME}/assets/conf/apisix.yaml" "${PROJECT_DIR}/apisix/conf/apisix.yaml"
+    fi
 
     info "Project scaffolding created ✓"
-    info "  ${PROJECT_DIR}/apisix/plugins/  — place your Lua plugins here"
-    info "  ${PROJECT_DIR}/t/               — place your .t test files here"
-    info "  ${PROJECT_DIR}/.editorconfig    — Editor configuration"
+    info "  ${PROJECT_DIR}/apisix/plugins/      — place your Lua plugins here"
+    info "  ${PROJECT_DIR}/apisix/conf/apisix.yaml — standalone routes/upstreams config"
+    info "  ${PROJECT_DIR}/t/                   — place your .t test files here"
+    info "  ${PROJECT_DIR}/.editorconfig        — Editor configuration"
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
@@ -137,6 +151,7 @@ main() {
 
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
+        run)     preflight; cmd_run "$@" ;;
         test)    preflight; cmd_test "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)

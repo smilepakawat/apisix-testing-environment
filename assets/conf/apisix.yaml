@@ -1,0 +1,7 @@
+# apisix.yaml — APISIX data-plane config (standalone mode)
+# Add your routes, upstreams, and services here.
+# APISIX polls this file every second for changes.
+# The #END marker is required — do not remove it.
+
+routes: []
+#END

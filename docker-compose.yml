@@ -1,15 +1,24 @@
 services:
-  etcd:
-    image: registry.k8s.io/etcd:3.5.12-0
-    container_name: apisix-etcd
-    environment:
-      ALLOW_NONE_AUTHENTICATION: "yes"
-      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
-      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
-    command: ["etcd"]
+  # ── Standalone APISIX ─────────────────────────────────────────────────────
+  # Runs APISIX with config_provider: yaml (no etcd).
+  # Routes and upstreams are read from apisix/conf/apisix.yaml in your project.
+  # Usage:  sixte run
+  apisix:
+    build:
+      context: ${SIXTE_HOME:-.}
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME}
+    container_name: ${SIXTE_NAME}-standalone
+    ports:
+      - "9080:9080"
+    volumes:
+      - ${PROJECT_DIR:-.}/apisix/plugins/:/opt/custom-plugins/apisix/plugins/
+      - ${PROJECT_DIR:-.}/apisix/conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
 
+  # ── Integration-test harness ──────────────────────────────────────────────
+  # etcd is started inside this container by the test command.
+  # Managed by `sixte test`; not intended to be started manually.
   apisix-testing-environment:
-    network_mode: "service:etcd"
     build:
       context: ${SIXTE_HOME:-.}
       dockerfile: Dockerfile

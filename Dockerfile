@@ -49,6 +49,36 @@ RUN curl https://raw.githubusercontent.com/apache/apisix/master/utils/linux-inst
     && make deps \
     && chmod -R a+r deps
 
-# ── 5. Environment ──────────────────────────────────────────────────────────
+# ── 5. etcd (bundled for single-container integration testing) ───────────────
+ARG ETCD_VERSION=3.5.12
+RUN set -eux; \
+    ARCH="$(dpkg --print-architecture)"; \
+    curl -fsSL "https://github.com/etcd-io/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-${ARCH}.tar.gz" \
+        -o /tmp/etcd.tar.gz; \
+    tar -xzf /tmp/etcd.tar.gz --strip-components=1 \
+        -C /usr/local/bin \
+        "etcd-v${ETCD_VERSION}-linux-${ARCH}/etcd" \
+        "etcd-v${ETCD_VERSION}-linux-${ARCH}/etcdctl"; \
+    chmod +x /usr/local/bin/etcd /usr/local/bin/etcdctl; \
+    rm /tmp/etcd.tar.gz
+
+# ── 6. Environment ──────────────────────────────────────────────────────────
 ENV APISIX_HOME=/usr/local/apisix-src
 ENV PATH="/usr/local/openresty/nginx/sbin:/usr/local/openresty/luajit/bin:/usr/local/openresty/bin:${PATH}"
+
+# ── 6. Standalone mode configuration ────────────────────────────────────────
+# Override the default config.yaml with standalone (config_provider: yaml).
+# apisix.yaml provides an empty-routes default so APISIX starts cleanly.
+# Users may bind-mount their own apisix.yaml at runtime to supply routes.
+COPY assets/conf/config.yaml /usr/local/apisix/conf/config.yaml
+COPY assets/conf/apisix.yaml /usr/local/apisix/conf/apisix.yaml
+
+# ── 7. Entrypoint & default command ─────────────────────────────────────────
+# The entrypoint copies any custom plugins from the mounted volume before
+# handing off to the command.  The default CMD starts APISIX in standalone
+# mode; the test harness overrides this with `bash -c "prove …"`.
+COPY assets/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["apisix", "start"]
