@@ -75,7 +75,7 @@ ensure_scaffold() {
 
 # ─── Ensure image is built ───────────────────────────────────────────
 ensure_image() {
-    if ! docker image inspect "${_NAME}" &>/dev/null; then
+    if ! docker image inspect "${SIXTE_IMAGE_NAME}" &>/dev/null; then
         warn "Image '${SIXTE_IMAGE_NAME}' not found. Building it now..."
         cmd_build
     fi
