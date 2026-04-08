@@ -1,15 +1,19 @@
-\033[1msixte\033[0m — APISIX Plugin Testing Environment CLI
+sixte — APISIX Plugin Testing Environment CLI
 
-\033[0;36mUSAGE\033[0m
+USAGE
     sixte <command> [options]
 
-\033[0;36mCOMMANDS\033[0m
-    \033[0;32mbuild\033[0m       Build the APISIX test Docker image
-    \033[0;32mtest\033[0m        Run prove -r t/ inside the container
-    \033[0;32minit\033[0m        Initialise a new plugin project (create plugins/, t/)
-    \033[0;32mhelp\033[0m        Show this help message
+COMMANDS
+    build       Build the APISIX test Docker image
+    run         Run APISIX in standalone mode
+    test        Run prove -r t/ inside the container
+    down        Stop and remove APISIX test environment
+    restart     Restart the APISIX container (useful for code reloads)
+    logs        Tail the APISIX container logs
+    init        Initialise a new plugin project (create plugins/, t/)
+    help        Show this help message
 
-\033[0;36mEXAMPLES\033[0m
+EXAMPLES
     # From your plugin project directory:
     sixte build              # Build the test image (first time)
     sixte test               # Run your tests

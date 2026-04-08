@@ -1,5 +1,8 @@
 # sixte — APISIX Plugin Testing Environment CLI
 
+> [!CAUTION]
+> **Standalone Mode Only**: This testing environment currently only supports running APISIX in standalone mode. Deployments using etcd are not supported.
+
 `sixte` is an easy-to-use CLI tool designed to streamline the development and testing of Apache APISIX plugins, inspired by tools like Kong's Pongo. It provides an isolated, container-based testing environment using Docker and Docker Compose.
 
 ## Prerequisites
@@ -42,7 +45,11 @@ Run this from your plugin project directory. The script discovers the framework'
 ### Commands
 
 * **`build`** - Build the APISIX test Docker image
+* **`run`** - Run APISIX in standalone mode
 * **`test`** - Run integration tests (`prove -r t/`) inside the container
+* **`down`** - Stop and remove APISIX test environment
+* **`restart`** - Restart the APISIX container (useful for code reloads)
+* **`logs`** - Tail the APISIX container logs
 * **`init`** - Initialise a new plugin project (creates the `plugins/` and `t/` directories along with configuration files)
 * **`help`** - Show the help message
 

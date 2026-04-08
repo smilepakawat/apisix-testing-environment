@@ -129,7 +129,22 @@ cmd_run() {
     info "  Routes config : ${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
     info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
     info "  Listening on  : http://localhost:9080"
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" up -d apisix
+}
+
+cmd_down() {
+    info "Stopping APISIX environment..."
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" down apisix
+}
+
+cmd_restart() {
+    info "Restarting APISIX environment to reload plugins..."
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" restart apisix
+}
+
+cmd_logs() {
+    info "Tailing APISIX logs..."
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" logs -f apisix
 }
 
 cmd_test() {
@@ -181,6 +196,9 @@ main() {
         build)   preflight; cmd_build "$@" ;;
         run)     preflight; cmd_run "$@" ;;
         test)    preflight; cmd_test "$@" ;;
+        down)    preflight; cmd_down "$@" ;;
+        restart) preflight; cmd_restart "$@" ;;
+        logs|log) preflight; cmd_logs "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)
             usage ;;
