@@ -43,7 +43,6 @@ export SIXTE_NAME
 SIXTE_IMAGE_NAME="${SIXTE_NAME}:${APISIX_VERSION}"
 export SIXTE_IMAGE_NAME
 
-# ─── Pre-flight checks ──────────────────────────────────────────────
 preflight() {
     if ! command -v docker &>/dev/null; then
         err "Docker is not installed. Please install Docker first."
@@ -61,8 +60,7 @@ preflight() {
     fi
 }
 
-# ─── Ensure project scaffolding exists ───────────────────────────────
-ensure_scaffold() {
+ensure_test_scaffold() {
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         warn "Creating ${PROJECT_DIR}/apisix/plugins/ directory..."
         mkdir -p "${PROJECT_DIR}/apisix/plugins"
@@ -73,11 +71,46 @@ ensure_scaffold() {
     fi
 }
 
-# ─── Ensure image is built ───────────────────────────────────────────
-ensure_image() {
+ensure_test_image() {
     if ! docker image inspect "${SIXTE_IMAGE_NAME}" &>/dev/null; then
         warn "Image '${SIXTE_IMAGE_NAME}' not found. Building it now..."
         cmd_build
+    fi
+}
+
+ensure_config() {
+    APISIX_CONF_PATH="${APISIX_CONF_PATH:-/conf}"
+    local apisix_file="${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
+    local config_file="${PROJECT_DIR}${APISIX_CONF_PATH}/config.yaml"
+    local template_apisix="${SIXTE_HOME}/assets/conf/apisix"
+    local template_config="${SIXTE_HOME}/assets/conf/config_standalone"
+
+    if [[ ! -f "${apisix_file}" ]]; then
+        warn "Config not found: ${apisix_file}"
+        if [[ -f "${template_apisix}" ]]; then
+            warn "Copying default config from template..."
+            mkdir -p "${PROJECT_DIR}${APISIX_CONF_PATH}"
+            cp "${template_apisix}" "${apisix_file}"
+            info "Created ${apisix_file} ✓"
+        else
+            err "Template config not found at ${template_apisix}."
+            err "Run 'sixte init' first, or create ${apisix_file} manually."
+            exit 1
+        fi
+    fi
+
+    if [[ ! -f "${config_file}" ]]; then
+        warn "Config not found: ${config_file}"
+        if [[ -f "${template_config}" ]]; then
+            warn "Copying default config from template..."
+            mkdir -p "${PROJECT_DIR}${APISIX_CONF_PATH}"
+            cp "${template_config}" "${config_file}"
+            info "Created ${config_file} ✓"
+        else
+            err "Template config not found at ${template_config}."
+            err "Run 'sixte init' first, or create ${config_file} manually."
+            exit 1
+        fi
     fi
 }
 
@@ -88,19 +121,20 @@ cmd_build() {
     info "Build complete ✓"
 }
 
-# cmd_run() {
-#     ensure_image
-#     ensure_scaffold
-#     info "Starting APISIX..."
-#     info "  Routes config : ${PROJECT_DIR}/apisix/conf/apisix.yaml"
-#     info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
-#     info "  Listening on  : http://localhost:9080"
-#     docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
-# }
+cmd_run() {
+    ensure_config
+    info "Starting APISIX..."
+    warn "Support only standalone mode!"
+    info "  Config dir    : ${PROJECT_DIR}${APISIX_CONF_PATH}/config.yaml"
+    info "  Routes config : ${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
+    info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
+    info "  Listening on  : http://localhost:9080"
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
+}
 
 cmd_test() {
-    ensure_image
-    ensure_scaffold
+    ensure_test_image
+    ensure_test_scaffold
     info "Starting test environment (single container)..."
     info "version: ${APISIX_VERSION}"
     info "Running tests (prove -r t/) inside the container..."
@@ -126,14 +160,9 @@ cmd_init() {
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
     fi
-    # Scaffold an apisix.yaml for standalone mode (if one doesn't exist yet)
-    if [[ ! -f "${PROJECT_DIR}/apisix/conf/apisix.yaml" ]]; then
-        cp "${SIXTE_HOME}/assets/conf/apisix.yaml" "${PROJECT_DIR}/apisix/conf/apisix.yaml"
-    fi
 
     info "Project scaffolding created ✓"
     info "  ${PROJECT_DIR}/apisix/plugins/      — place your Lua plugins here"
-    info "  ${PROJECT_DIR}/apisix/conf/apisix.yaml — standalone routes/upstreams config"
     info "  ${PROJECT_DIR}/t/                   — place your .t test files here"
     info "  ${PROJECT_DIR}/.editorconfig        — Editor configuration"
 }
@@ -150,7 +179,7 @@ main() {
 
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
-        # run)     preflight; cmd_run "$@" ;;
+        run)     preflight; cmd_run "$@" ;;
         test)    preflight; cmd_test "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)

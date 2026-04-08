@@ -7,7 +7,8 @@ services:
       - "9180:9180"
     volumes:
       - ${PROJECT_DIR:-.}/apisix/plugins/:/opt/custom-plugins/apisix/plugins/
-      - ${SIXTE_HOME:-.}/assets/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+      - ${PROJECT_DIR:-.}${APISIX_CONF_PATH:-/conf}/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+      - ${PROJECT_DIR:-.}${APISIX_CONF_PATH:-/conf}/config.yaml:/usr/local/apisix/conf/config.yaml
     environment:
       - APISIX_STAND_ALONE=true
 
