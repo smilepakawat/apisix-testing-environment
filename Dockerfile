@@ -65,20 +65,3 @@ RUN set -eux; \
 # ── 6. Environment ──────────────────────────────────────────────────────────
 ENV APISIX_HOME=/usr/local/apisix-src
 ENV PATH="/usr/local/openresty/nginx/sbin:/usr/local/openresty/luajit/bin:/usr/local/openresty/bin:${PATH}"
-
-# ── 6. Standalone mode configuration ────────────────────────────────────────
-# Override the default config.yaml with standalone (config_provider: yaml).
-# apisix.yaml provides an empty-routes default so APISIX starts cleanly.
-# Users may bind-mount their own apisix.yaml at runtime to supply routes.
-COPY assets/conf/config.yaml /usr/local/apisix/conf/config.yaml
-COPY assets/conf/apisix.yaml /usr/local/apisix/conf/apisix.yaml
-
-# ── 7. Entrypoint & default command ─────────────────────────────────────────
-# The entrypoint copies any custom plugins from the mounted volume before
-# handing off to the command.  The default CMD starts APISIX in standalone
-# mode; the test harness overrides this with `bash -c "prove …"`.
-COPY assets/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["apisix", "start"]

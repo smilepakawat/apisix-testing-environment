@@ -32,12 +32,16 @@ PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 export PROJECT_DIR
 
 # Container / image names
-APISIX_TEST_VERSION=3.15.0-test
-export APISIX_TEST_VERSION
+APISIX_VERSION=3.15.0
+export APISIX_VERSION
+APISIX_NAME="apisix"
+export APISIX_NAME
+APISIX_IMAGE_NAME="apache/apisix:${APISIX_VERSION}-debian"
+export APISIX_IMAGE_NAME
 SIXTE_NAME="apisix-testing-environment"
 export SIXTE_NAME
-IMAGE_NAME="${SIXTE_NAME}:${APISIX_TEST_VERSION}"
-export IMAGE_NAME
+SIXTE_IMAGE_NAME="${SIXTE_NAME}:${APISIX_VERSION}"
+export SIXTE_IMAGE_NAME
 
 # ─── Pre-flight checks ──────────────────────────────────────────────
 preflight() {
@@ -71,36 +75,34 @@ ensure_scaffold() {
 
 # ─── Ensure image is built ───────────────────────────────────────────
 ensure_image() {
-    if ! docker image inspect "${IMAGE_NAME}" &>/dev/null; then
-        warn "Image '${IMAGE_NAME}' not found. Building it now..."
+    if ! docker image inspect "${_NAME}" &>/dev/null; then
+        warn "Image '${SIXTE_IMAGE_NAME}' not found. Building it now..."
         cmd_build
     fi
 }
 
-
-
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
-    info "Building APISIX test image (${IMAGE_NAME})..."
-    docker build -t "${IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}" 2>&1 | tee build.log
+    info "Building APISIX test image (${SIXTE_IMAGE_NAME})..."
+    docker build -t "${SIXTE_IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
     info "Build complete ✓"
 }
 
-cmd_run() {
-    ensure_image
-    ensure_scaffold
-    info "Starting APISIX in standalone mode..."
-    info "  Routes config : ${PROJECT_DIR}/apisix/conf/apisix.yaml"
-    info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
-    info "  Listening on  : http://localhost:9080"
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
-}
+# cmd_run() {
+#     ensure_image
+#     ensure_scaffold
+#     info "Starting APISIX..."
+#     info "  Routes config : ${PROJECT_DIR}/apisix/conf/apisix.yaml"
+#     info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
+#     info "  Listening on  : http://localhost:9080"
+#     docker compose -f "${SIXTE_HOME}/docker-compose.yml" up apisix
+# }
 
 cmd_test() {
     ensure_image
     ensure_scaffold
     info "Starting test environment (single container)..."
-    info "version: ${APISIX_TEST_VERSION}"
+    info "version: ${APISIX_VERSION}"
     info "Running tests (prove -r t/) inside the container..."
 
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
@@ -110,16 +112,13 @@ cmd_test() {
            &>/tmp/etcd.log & \
      sleep 2 && \
      cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ 2>/dev/null || true && \
-     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /apisix/t/"
+     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /opt/custom-plugins/t/"
 }
 
 cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir -p "${PROJECT_DIR}/apisix/plugins"
-    fi
-    if [[ ! -d "${PROJECT_DIR}/apisix/conf" ]]; then
-        mkdir -p "${PROJECT_DIR}/apisix/conf"
     fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         mkdir -p "${PROJECT_DIR}/t"
@@ -151,7 +150,7 @@ main() {
 
     case "${cmd}" in
         build)   preflight; cmd_build "$@" ;;
-        run)     preflight; cmd_run "$@" ;;
+        # run)     preflight; cmd_run "$@" ;;
         test)    preflight; cmd_test "$@" ;;
         init)    cmd_init "$@" ;;
         help|--help|-h)
