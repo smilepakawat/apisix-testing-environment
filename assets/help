@@ -10,7 +10,7 @@ COMMANDS
     down        Stop and remove APISIX test environment
     restart     Restart the APISIX container (useful for code reloads)
     logs        Tail the APISIX container logs
-    init        Initialise a new plugin project (create plugins/, t/)
+    init        Initialise a new plugin project (use -c/--config to init conf)
     help        Show this help message
 
 EXAMPLES

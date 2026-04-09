@@ -50,7 +50,7 @@ Run this from your plugin project directory. The script discovers the framework'
 * **`down`** - Stop and remove APISIX test environment
 * **`restart`** - Restart the APISIX container (useful for code reloads)
 * **`logs`** - Tail the APISIX container logs
-* **`init`** - Initialise a new plugin project (creates the `plugins/` and `t/` directories along with configuration files)
+* **`init`** - Initialise a new plugin project (creates the `plugins/` and `t/` directories). Use `-c` or `--config` to also initialise APISIX configuration files.
 * **`help`** - Show the help message
 
 ## Getting Started

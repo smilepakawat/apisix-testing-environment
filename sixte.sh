@@ -94,7 +94,7 @@ ensure_config() {
             info "Created ${apisix_file} ✓"
         else
             err "Template config not found at ${template_apisix}."
-            err "Run 'sixte init' first, or create ${apisix_file} manually."
+            err "Run 'sixte init --config' first, or create ${apisix_file} manually."
             exit 1
         fi
     fi
@@ -108,7 +108,7 @@ ensure_config() {
             info "Created ${config_file} ✓"
         else
             err "Template config not found at ${template_config}."
-            err "Run 'sixte init' first, or create ${config_file} manually."
+            err "Run 'sixte init --config' first, or create ${config_file} manually."
             exit 1
         fi
     fi
@@ -173,6 +173,14 @@ cmd_test() {
 }
 
 cmd_init() {
+    local init_config=false
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -c|--config) init_config=true; shift ;;
+            *) err "Unknown option for init: $1"; exit 1 ;;
+        esac
+    done
+
     info "Initialising plugin project in ${PROJECT_DIR}..."
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir -p "${PROJECT_DIR}/apisix/plugins"
@@ -184,10 +192,17 @@ cmd_init() {
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
     fi
 
+    if [[ "$init_config" == true ]]; then
+        ensure_config
+    fi
+
     info "Project scaffolding created ✓"
     info "  ${PROJECT_DIR}/apisix/plugins/      — place your Lua plugins here"
     info "  ${PROJECT_DIR}/t/                   — place your .t test files here"
     info "  ${PROJECT_DIR}/.editorconfig        — Editor configuration"
+    if [[ "$init_config" == true ]]; then
+        info "  ${PROJECT_DIR}${APISIX_CONF_PATH:-/conf}                   — APISIX configuration files"
+    fi
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
