@@ -78,6 +78,31 @@ ensure_test_image() {
     fi
 }
 
+_ensure_single_config() {
+    local target_file="$1"
+    local template_file="$2"
+
+    if [[ ! -f "${target_file}" ]]; then
+        warn "Config not found: ${target_file}"
+        if [[ -f "${template_file}" ]]; then
+            read -p "Do you want to generate this default configuration file? [y/N] " -r REPLY
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                warn "Copying default config from template..."
+                mkdir -p "$(dirname "${target_file}")"
+                cp "${template_file}" "${target_file}"
+                info "Created ${target_file} ✓"
+            else
+                err "Run 'sixte init --config' first, or create ${target_file} manually."
+                exit 1
+            fi
+        else
+            err "Template config not found at ${template_file}."
+            err "Run 'sixte init --config' first, or create ${target_file} manually."
+            exit 1
+        fi
+    fi
+}
+
 ensure_config() {
     APISIX_CONF_PATH="${APISIX_CONF_PATH:-/conf}"
     local apisix_file="${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
@@ -85,33 +110,8 @@ ensure_config() {
     local template_apisix="${SIXTE_HOME}/assets/conf/apisix"
     local template_config="${SIXTE_HOME}/assets/conf/config_standalone"
 
-    if [[ ! -f "${apisix_file}" ]]; then
-        warn "Config not found: ${apisix_file}"
-        if [[ -f "${template_apisix}" ]]; then
-            warn "Copying default config from template..."
-            mkdir -p "${PROJECT_DIR}${APISIX_CONF_PATH}"
-            cp "${template_apisix}" "${apisix_file}"
-            info "Created ${apisix_file} ✓"
-        else
-            err "Template config not found at ${template_apisix}."
-            err "Run 'sixte init --config' first, or create ${apisix_file} manually."
-            exit 1
-        fi
-    fi
-
-    if [[ ! -f "${config_file}" ]]; then
-        warn "Config not found: ${config_file}"
-        if [[ -f "${template_config}" ]]; then
-            warn "Copying default config from template..."
-            mkdir -p "${PROJECT_DIR}${APISIX_CONF_PATH}"
-            cp "${template_config}" "${config_file}"
-            info "Created ${config_file} ✓"
-        else
-            err "Template config not found at ${template_config}."
-            err "Run 'sixte init --config' first, or create ${config_file} manually."
-            exit 1
-        fi
-    fi
+    _ensure_single_config "${apisix_file}" "${template_apisix}"
+    _ensure_single_config "${config_file}" "${template_config}"
 }
 
 # ─── Commands ────────────────────────────────────────────────────────
@@ -184,12 +184,15 @@ cmd_init() {
     info "Initialising plugin project in ${PROJECT_DIR}..."
     if [[ ! -d "${PROJECT_DIR}/apisix/plugins" ]]; then
         mkdir -p "${PROJECT_DIR}/apisix/plugins"
+        info "  ${PROJECT_DIR}/apisix/plugins/      — place your Lua plugins here"
     fi
     if [[ ! -d "${PROJECT_DIR}/t" ]]; then
         mkdir -p "${PROJECT_DIR}/t"
+        info "  ${PROJECT_DIR}/t/                   — place your .t test files here"
     fi
     if [[ ! -f "${PROJECT_DIR}/.editorconfig" ]]; then
         cp "${SIXTE_HOME}/assets/init/editorconfig" "${PROJECT_DIR}/.editorconfig"
+        info "  ${PROJECT_DIR}/.editorconfig        — Editor configuration"
     fi
 
     if [[ "$init_config" == true ]]; then
@@ -197,12 +200,6 @@ cmd_init() {
     fi
 
     info "Project scaffolding created ✓"
-    info "  ${PROJECT_DIR}/apisix/plugins/      — place your Lua plugins here"
-    info "  ${PROJECT_DIR}/t/                   — place your .t test files here"
-    info "  ${PROJECT_DIR}/.editorconfig        — Editor configuration"
-    if [[ "$init_config" == true ]]; then
-        info "  ${PROJECT_DIR}${APISIX_CONF_PATH:-/conf}                   — APISIX configuration files"
-    fi
 }
 
 # ─── Usage / Help ────────────────────────────────────────────────────
