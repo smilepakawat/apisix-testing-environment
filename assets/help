@@ -4,7 +4,7 @@ USAGE
     sixte <command> [options]
 
 COMMANDS
-    build       Build the APISIX test Docker image
+    build       Build the APISIX test Docker image (use -f/--force to build without cache)
     run         Run APISIX in standalone mode
     test        Run prove -r t/ inside the container
     down        Stop and remove APISIX test environment

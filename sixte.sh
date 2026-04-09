@@ -116,8 +116,16 @@ ensure_config() {
 
 # ─── Commands ────────────────────────────────────────────────────────
 cmd_build() {
+    local build_opts=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--force) build_opts="--no-cache"; shift ;;
+            *) err "Unknown option for build: $1"; exit 1 ;;
+        esac
+    done
+
     info "Building APISIX test image (${SIXTE_IMAGE_NAME})..."
-    docker build -t "${SIXTE_IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
+    docker build ${build_opts} -t "${SIXTE_IMAGE_NAME}" -f "${SIXTE_HOME}/Dockerfile" "${SIXTE_HOME}"
     info "Build complete ✓"
 }
 
@@ -193,13 +201,13 @@ main() {
     shift 2>/dev/null || true
 
     case "${cmd}" in
-        build)   preflight; cmd_build "$@" ;;
-        run)     preflight; cmd_run "$@" ;;
-        test)    preflight; cmd_test "$@" ;;
-        down)    preflight; cmd_down "$@" ;;
-        restart) preflight; cmd_restart "$@" ;;
-        logs|log) preflight; cmd_logs "$@" ;;
-        init)    cmd_init "$@" ;;
+        build)      preflight; cmd_build "$@" ;;
+        run)        preflight; cmd_run "$@" ;;
+        test)       preflight; cmd_test "$@" ;;
+        down)       preflight; cmd_down "$@" ;;
+        restart)    preflight; cmd_restart "$@" ;;
+        logs|log)   preflight; cmd_logs "$@" ;;
+        init)       cmd_init "$@" ;;
         help|--help|-h)
             usage ;;
         *)

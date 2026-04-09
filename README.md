@@ -44,7 +44,7 @@ Run this from your plugin project directory. The script discovers the framework'
 
 ### Commands
 
-* **`build`** - Build the APISIX test Docker image
+* **`build`** - Build the APISIX test Docker image. Use `-f` or `--force` to build without cache.
 * **`run`** - Run APISIX in standalone mode
 * **`test`** - Run integration tests (`prove -r t/`) inside the container
 * **`down`** - Stop and remove APISIX test environment
