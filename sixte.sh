@@ -133,10 +133,10 @@ cmd_run() {
     ensure_config
     info "Starting APISIX..."
     warn "Support only standalone mode!"
-    info "  Config dir    : ${PROJECT_DIR}${APISIX_CONF_PATH}/config.yaml"
-    info "  Routes config : ${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
-    info "  Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
-    info "  Listening on  : http://localhost:9080"
+    info "Config dir    : ${PROJECT_DIR}${APISIX_CONF_PATH}/config.yaml"
+    info "Routes config : ${PROJECT_DIR}${APISIX_CONF_PATH}/apisix.yaml"
+    info "Plugins dir   : ${PROJECT_DIR}/apisix/plugins/"
+    info "Listening on  : http://localhost:9080"
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" up -d apisix
 }
 
@@ -156,11 +156,28 @@ cmd_logs() {
 }
 
 cmd_test() {
+    local target_paths=""
+    local test_paths=""
+    if [[ $# -eq 0 ]]; then
+        target_paths="/opt/custom-plugins/t/"
+        test_paths="t/"
+    else
+        for path in "$@"; do
+            path="${path#./}"
+            if [[ "$path" == t/* || "$path" == "t" ]]; then
+                target_paths="${target_paths} /opt/custom-plugins/${path}"
+            else
+                target_paths="${target_paths} ${path}"
+            fi
+            test_paths="${test_paths} ${path}"
+        done
+    fi
+
     ensure_test_image
     ensure_test_scaffold
     info "Starting test environment (single container)..."
     info "version: ${APISIX_VERSION}"
-    info "Running tests (prove -r t/) inside the container..."
+    info "Running tests (prove -r ${test_paths}) inside the container..."
 
     docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
     "etcd --listen-client-urls http://0.0.0.0:2379 \
@@ -169,7 +186,7 @@ cmd_test() {
            &>/tmp/etcd.log & \
      sleep 2 && \
      cp -r /opt/custom-plugins/apisix/plugins/*.lua /usr/local/apisix-src/apisix/plugins/ 2>/dev/null || true && \
-     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r /opt/custom-plugins/t/"
+     prove -I/usr/local/test-nginx/lib -I/usr/local/apisix-src -r ${target_paths}"
 }
 
 cmd_init() {

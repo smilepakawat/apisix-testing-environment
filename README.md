@@ -46,7 +46,7 @@ Run this from your plugin project directory. The script discovers the framework'
 
 * **`build`** - Build the APISIX test Docker image. Use `-f` or `--force` to build without cache.
 * **`run`** - Run APISIX in standalone mode
-* **`test`** - Run integration tests (`prove -r t/`) inside the container
+* **`test`** - Run integration tests inside the container. You can pass specific test paths (e.g., `sixte test t/my-plugin.t`)
 * **`down`** - Stop and remove APISIX test environment
 * **`restart`** - Restart the APISIX container (useful for code reloads)
 * **`logs`** - Tail the APISIX container logs
@@ -79,4 +79,10 @@ Run this from your plugin project directory. The script discovers the framework'
 
    ```bash
    sixte test
+   ```
+
+   You can also test specific files or directories by passing them as arguments:
+
+   ```bash
+   sixte test t/my-plugin.t
    ```
