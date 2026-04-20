@@ -179,7 +179,7 @@ cmd_test() {
     info "version: ${APISIX_VERSION}"
     info "Running tests (prove -r ${test_paths}) inside the container..."
 
-    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --rm apisix-testing-environment bash -c \
+    docker compose -f "${SIXTE_HOME}/docker-compose.yml" run --name ${SIXTE_NAME} --rm apisix-testing-environment bash -c \
     "etcd --listen-client-urls http://0.0.0.0:2379 \
            --advertise-client-urls http://0.0.0.0:2379 \
            --data-dir /tmp/etcd-data \
